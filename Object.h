@@ -14,8 +14,11 @@ public:
 
 	Scroll* scroll;
 
-	int sound;
+	static int objectDiveder;
+	static int maxPlayTimer;
+	static int maxVolume;
 	int playTimer = 0;
+	int sound;
 	int volume = 200;
 	int pan = 0;
 

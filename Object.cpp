@@ -2,6 +2,10 @@
 #include "Object.h"
 #include "Player.h"
 
+int Object::objectDiveder = 2500;
+int Object::maxPlayTimer = 50;
+int Object::maxVolume = 255;
+
 Object::Object(int x, int y, int radius, int sound)
 {
 	this->x = x;
@@ -27,25 +31,26 @@ void Object::Sound(Player player)
 	{
 		PlaySoundMem(sound, DX_PLAYTYPE_LOOP, TRUE);
 	}
-	else if (playTimer > 50)
+	else if (playTimer > maxPlayTimer)
 	{
 		playTimer = 1;
 	}
+
 	playTimer++;
 
 	//オブジェクトとの距離をとる
 	objectDistance =
 		(((x - player.x) * (x - player.x)) + ((y - player.y) * (y - player.y))
-			- (radius + player.radius) * (radius + player.radius)) / 2500;
+			- (radius + player.radius) * (radius + player.radius)) / objectDiveder;
 
 	//距離をもとに音量を調節
 	if (objectDistance > 0)
 	{
-		volume = -objectDistance + 255;
+		volume = -objectDistance + maxVolume;
 	}
 	else
 	{
-		volume = objectDistance + 255;
+		volume = objectDistance + maxVolume;
 	}
 
 	//左右判定をもとにパン値を調節
