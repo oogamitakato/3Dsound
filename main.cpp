@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "Object.h"
 #include "Scroll.h"
+#include "Astar.h"
 #include "Mapchip.h"
 #include <math.h>
 
@@ -41,6 +42,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	// (ダブルバッファ)描画先グラフィック領域は裏面を指定
 	SetDrawScreen(DX_SCREEN_BACK);
 
+	int goalCountTmp = 0;
+
 	// 画像などのリソースデータの変数宣言と読み込み
 	int mokugyoSound = LoadSoundMem("mokugyo.wav");
 	int mokugyoSound2 = LoadSoundMem("mokugyo.wav");
@@ -48,12 +51,17 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	// ゲームループで使う変数の宣言
 	//プレイヤーについて
-	Player* player = new Player(WIN_WIDTH / 2, WIN_HEIGHT / 2, 16);
+	Player* player = new Player(WIN_WIDTH / 2 + BlockSize / 2, WIN_HEIGHT / 2 + BlockSize / 2, 16);
 
-	//オブジェクトについて		//X座用,Y座標,半径,音
-	Object* object1 = new Object(   0,    0, 32, mokugyoSound);
-	Object* object2 = new Object(-500,  1000, 32, mokugyoSound2);
-	Object* object3 = new Object( 500, -500, 32, fanfareSound);
+	//オブジェクトについて
+	Object* object1 = new Object(BlockSize * 3 + BlockSize / 2, BlockSize * 4 + BlockSize / 2, 32, mokugyoSound);
+	//Object* object2 = new Object(BlockSize * 10 + BlockSize / 2, BlockSize * 10 + BlockSize / 2, 32, fanfareSound);;
+	//Object* object3 = new Object( 500, -500, 32, fanfareSound);
+
+	Cell start = Cell(player->x / BlockSize, player->y / BlockSize);
+	Cell goal = Cell(object1->x / BlockSize, object1->y / BlockSize);
+	CreateMap();
+	AStar(start, goal, *object1);
 
 
 	// 最新のキーボード情報用
@@ -76,18 +84,39 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		//プレイヤーの移動
 		player->Move();
 
+		for (int i = 0; i < MapHeight; i++)
+		{
+			if (player->y == BlockSize * i || player->x == BlockSize * i)
+			{
+				start = Cell(player->x / BlockSize, player->y / BlockSize);
+				goal = Cell(object1->x / BlockSize, object1->y / BlockSize);
+				
+				AStar(start, goal, *object1);
+			}
+		}
+	
 		//オブジェクトの音を鳴らす
 		object1->Sound(*player);
-		object2->Sound(*player);
-		object3->Sound(*player);
+		//object2->Sound(*player);
+		//object3->Sound(*player);
 
 		// 描画処理
-		for (int i = -20; i <= 20; i++)
+		for (int i = 0; i <= MapHeight - 1; i++)
 		{
-			DrawLine(i * blockSize - object1->scroll->x, -1280 - object1->scroll->y,
-					 i * blockSize - object1->scroll->x, 1280 - object1->scroll->y, GetColor(100, 100, 100));
-			DrawLine(-1280 - object1->scroll->x, i * blockSize - object1->scroll->y,
-					 1280 - object1->scroll->x, i * blockSize - object1->scroll->y, GetColor(100, 100, 100));
+			DrawLine(i * BlockSize - object1->scroll->x,-object1->scroll->y,
+					 i * BlockSize - object1->scroll->x, MapHeight * BlockSize - object1->scroll->y, GetColor(100, 100, 100));
+			DrawLine(-object1->scroll->x, i * BlockSize - object1->scroll->y,
+				MapWidth * BlockSize - object1->scroll->x, i * BlockSize - object1->scroll->y, GetColor(100, 100, 100));
+
+			for (int j = 0; j <= MapWidth - 1; j++)
+			{
+				if (CostTable[j][i] == 0)
+				{
+					DrawBox(i * BlockSize - object1->scroll->x, j * BlockSize - object1->scroll->y,
+						i * BlockSize - object1->scroll->x + BlockSize, j * BlockSize - object1->scroll->y + BlockSize,
+						GetColor(255, 0, 255), true);
+				}
+			}
 		}
 		 
 		//プレイヤーの描画
@@ -95,25 +124,15 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 		//オブジェクトの描画
 		object1->Draw();
-		object2->Draw();
-		object3->Draw();
+		//object2->Draw();
+		//object3->Draw();
 
-		////マップの描画
-		//for (int i = 0; i < 20; i++) {
-		//	for (int j = 0; j < 20; j++) {
-		//		if (map[i][j] == 1) {
-		//			DrawBox(blockSize * i - object->scroll->x, blockSize * j - object->scroll->y, 
-		//				blockSize * i + blockSize - object->scroll->x, blockSize * j + blockSize - object->scroll->y,
-		//				GetColor(0, 255, 0), true);
-		//		}
-		//	}
-		//}
-
-		DrawFormatString(0, 0, GetColor(255, 255, 255), "x座標:%d", player->x);
+		/*DrawFormatString(0, 0, GetColor(255, 255, 255), "x座標:%d", player->x);
 		DrawFormatString(0, 20, GetColor(255, 255, 255), "y座標:%d", player->y);
 		DrawFormatString(0, 40, GetColor(255, 255, 255), "音量:%d", object1->volume);
-		DrawFormatString(0, 60, GetColor(255, 255, 255), "パン値:%d", object1->pan);
+		DrawFormatString(0, 60, GetColor(255, 255, 255), "パン値:%d", object1->pan);*/
 
+		AStarDraw(start, goal, *object1);
 		//---------  ここまでにプログラムを記述  ---------//
 		// (ダブルバッファ)裏面
 		ScreenFlip();

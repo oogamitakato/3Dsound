@@ -14,12 +14,15 @@ public:
 
 	Scroll* scroll;
 
+	//ブロックのサイズ
+	const int BlockSize = 128;
+
 	static int objectDiveder;
 	static int maxPlayTimer;
 	static int maxVolume;
+    int volume;
 	int playTimer = 0;
 	int sound;
-	int volume = 200;
 	int pan = 0;
 
 	//メンバ関数

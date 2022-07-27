@@ -1,6 +1,8 @@
 #include "DxLib.h"
 #include "Object.h"
 #include "Player.h"
+#include "Astar.h"
+#include "Mapchip.h"
 
 int Object::objectDiveder = 2500;
 int Object::maxPlayTimer = 50;
@@ -12,8 +14,9 @@ Object::Object(int x, int y, int radius, int sound)
 	this->y = y;
 	this->radius = radius;
 	this->sound = sound;
+	volume = 0;
 
-	this->scroll = new Scroll(0, 0, 5);
+	this->scroll = new Scroll(0, 0, 2);
 }
 
 //オブジェクトを描画する関数
@@ -38,25 +41,25 @@ void Object::Sound(Player player)
 
 	playTimer++;
 
-	//オブジェクトとの距離をとる
-	objectDistance =
-		(((x - player.x) * (x - player.x)) + ((y - player.y) * (y - player.y))
-			- (radius + player.radius) * (radius + player.radius)) / objectDiveder;
+	////オブジェクトとの距離をとる
+	//objectDistance =
+	//	(((x - player.x) * (x - player.x)) + ((y - player.y) * (y - player.y))
+	//		- (radius + player.radius) * (radius + player.radius)) / objectDiveder;
 
-	//距離をもとに音量を調節
-	if (objectDistance > 0)
-	{
-		volume = -objectDistance + maxVolume;
-	}
-	else
-	{
-		volume = objectDistance + maxVolume;
-	}
+	//
+	////距離をもとに音量を調節
+	//if (objectDistance > 0)
+	//{
+	//	volume -= objectDistance / 50;
+	//}
+	//else
+	//{
+	//	volume += objectDistance / 50;
+	//}
 
 	//左右判定をもとにパン値を調節
 	pan = (x - player.x) / 2;
-
-	ChangeVolumeSoundMem(volume, sound);
+	//ChangeVolumeSoundMem(volume, sound);
 	ChangePanSoundMem(pan, sound);
 
 }

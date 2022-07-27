@@ -7,7 +7,7 @@ Player::Player(int x, int y, int radius)
 	this->y = y;
 	this->radius = radius;
 
-	this->scroll = new Scroll(0, 0, 5);
+	this->scroll = new Scroll(0, 0, 2);
 }
 
 //ƒvƒŒƒCƒ„[‚ğˆÚ“®‚³‚¹‚éŠÖ”
